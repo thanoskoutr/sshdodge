@@ -113,7 +113,7 @@ def main():
 			ip = check[1].ip
 			port = check[1].port
 			wordlist = check[1].wordlist
-			attempts = check[1].attempts
+			attempts = int(check[1].attempts)
 			
 			f = open(wordlist)
 			c = 0
