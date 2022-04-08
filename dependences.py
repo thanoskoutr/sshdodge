@@ -41,6 +41,7 @@ def install_dependences():
 		os.system("apt install proxychains")
 		os.system("apt install sshpass")
 		os.system("apt install ftp")
+		os.system("apt install curl")
 		print "\n[*] Dependences installed..\n"
 	except OSError as e:
 		print "[!] Error!\n"
@@ -64,6 +65,9 @@ def check_dependences():
 		dependences = False
 	if not check_tool("ftp"):
 		print "\tFtp not found!"
+		dependences = False
+	if not check_tool("curl"):
+		print "\tCurl not found!"
 		dependences = False
 	if not check_tool("sshpass"):
 		print "\tSshpass not found!"
