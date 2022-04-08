@@ -67,7 +67,7 @@ def argvcontrol():
 		if t:
 			manage_dependences()
 
-	parser = argparse.ArgumentParser(epilog="Ex: sudo ./SshFailToBanBypass.py wordlist.txt -i 127.0.0.1 -p 22 -a 3 -b pass -c root")
+	parser = argparse.ArgumentParser(epilog="Ex: sudo ./sshdodge.py wordlist.txt -i 127.0.0.1 -p 22 -a 3 -b pass -c root")
 	parser.add_argument("wordlist", help="Wordlist for dictionary attack")
 	parser.add_argument("-b","--bruteforce", help="The bruteforce attack type (user, pass)", default="pass")
 	parser.add_argument("-c","--credential", help="Constant credential (user, pass) value depending on the bruteforce attack type", default="root")
