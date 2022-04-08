@@ -26,15 +26,21 @@ CONTACTS:
 import socket, os
 
 def ipValidator(ip):
+	# Check for hostname
 	try:
-		socket.inet_pton(socket.AF_INET, ip)
-	except AttributeError:
+		ip_addr = socket.gethostbyname(ip)
+		# Check for IPv4/IPv6 address
 		try:
-			socket.inet_aton(ip)
+			socket.inet_pton(socket.AF_INET, ip_addr)
+		except AttributeError:
+			try:
+				socket.inet_aton(ip_addr)
+			except socket.error:
+				return False
+			return ip_addr.count('.') == 3
 		except socket.error:
 			return False
-		return ip.count('.') == 3
-	except socket.error:
+	except socket.gaierror:
 		return False
 
 	return True

@@ -25,7 +25,7 @@ CONTACTS:
 	- neetx@protonmail.com
 """
 
-import os, sys, argparse, time, subprocess
+import os, sys, argparse, time, subprocess, socket
 from dependences import manage_dependences
 from validators import (
 	ipValidator,
@@ -71,7 +71,7 @@ def argvcontrol():
 	parser.add_argument("wordlist", help="Wordlist for dictionary attack")
 	parser.add_argument("-b","--bruteforce", help="The bruteforce attack type (user, pass)", default="pass")
 	parser.add_argument("-c","--credential", help="Constant credential (user, pass) value depending on the bruteforce attack type", default="root")
-	parser.add_argument("-i","--ip", help="Destination ip address", default="127.0.0.1")
+	parser.add_argument("-i","--ip", help="Destination ip address or hostname", default="127.0.0.1")
 	parser.add_argument("-p","--port", help="Destination port", default="22")
 	parser.add_argument("-a","--attempts", help="Number of attempts before identity change", default="3")
 	parser.add_argument("-w","--wait", help="Waiting time after Tor service restart", default=1)
@@ -89,7 +89,7 @@ def argvcontrol():
 		print "[!] Invalid bruteforce type, choose between: user, pass"
 		exit()
 	if not ipValidator(args.ip):
-		print "[!] Invalid Ip Address"
+		print "[!] Invalid Hostname or Ip Address"
 		valid = False
 	if not portValidator(args.port):
 		print"[!] Invalid Port"
@@ -118,7 +118,7 @@ def main():
 			image()
 
 			bruteforce = check[1].bruteforce
-			ip = check[1].ip
+			ip = socket.gethostbyname(check[1].ip)
 			port = check[1].port
 			wordlist = check[1].wordlist
 			attempts = int(check[1].attempts)
