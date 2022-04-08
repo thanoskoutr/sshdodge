@@ -31,7 +31,7 @@ from validators import (
 	ipValidator,
 	portValidator,
 	checkWordlist,
-	attemptsValidation,
+	positiveNumberValidation,
 	userValidator
 	)
 
@@ -74,7 +74,7 @@ def argvcontrol():
 	parser.add_argument("-i","--ip", help="Destination ip address or hostname", default="127.0.0.1")
 	parser.add_argument("-p","--port", help="Destination port", default="22")
 	parser.add_argument("-a","--attempts", help="Number of attempts before identity change", default="3")
-	parser.add_argument("-w","--wait", help="Waiting time after Tor service restart", default=1)
+	parser.add_argument("-w","--wait", help="Waiting time after Tor service restart (in seconds)", default="1")
 	parser.add_argument("-s","--service", help="The targeted service: ssh, ftp", default='ssh')
 	parser.add_argument("-t","--test", help="Use the to test dependences", action='store_true', default=False)
 	args = parser.parse_args()
@@ -98,8 +98,11 @@ def argvcontrol():
 	if not checkWordlist(args.wordlist):
 		print "[!] Wordlist not found"
 		valid = False
-	if not attemptsValidation(args.attempts):
+	if not positiveNumberValidation(args.attempts):
 		print "[!] Attempts invalid"
+		valid = False
+	if not positiveNumberValidation(args.wait):
+		print "[!] Wait time invalid"
 		valid = False
 	if args.service != "ssh" and args.service != "ftp":
 		print "[!] Invalid service, choose between: ssh, ftp"
