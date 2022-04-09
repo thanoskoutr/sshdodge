@@ -51,8 +51,15 @@ def portValidator(port):
 def checkWordlist(wordlist):
 	return os.path.isfile(wordlist)
 
-def positiveNumberValidation(num):
+def positiveIntegerValidation(num):
 	return (num.isdigit()) and (0 < int(num))
+
+def positiveFloatValidation(num):
+	try:
+		float(num)
+		return (0 < float(num))
+	except ValueError:
+		return False
 
 def userValidator(user):
 	return len(user) < 32

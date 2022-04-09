@@ -31,7 +31,8 @@ from validators import (
 	ipValidator,
 	portValidator,
 	checkWordlist,
-	positiveNumberValidation,
+	positiveIntegerValidation,
+	positiveFloatValidation,
 	userValidator
 	)
 
@@ -99,13 +100,13 @@ def argvcontrol():
 	if not checkWordlist(args.wordlist):
 		print "[!] Wordlist not found"
 		valid = False
-	if not positiveNumberValidation(args.attempts):
+	if not positiveIntegerValidation(args.attempts):
 		print "[!] Attempts invalid"
 		valid = False
-	if not positiveNumberValidation(args.wait):
+	if not positiveFloatValidation(args.wait):
 		print "[!] Wait time invalid"
 		valid = False
-	if not positiveNumberValidation(args.timeout):
+	if not positiveFloatValidation(args.timeout):
 		print "[!] Timeout invalid"
 		valid = False
 	if args.service != "ssh" and args.service != "ftp" and args.service != "http":
@@ -150,8 +151,8 @@ def main():
 			port = check[1].port
 			wordlist = check[1].wordlist
 			attempts = int(check[1].attempts)
-			wait = int(check[1].wait)
-			timeout = int(check[1].timeout)
+			wait = float(check[1].wait)
+			timeout = float(check[1].timeout)
 			service = check[1].service
 			user = ""
 			password = ""
